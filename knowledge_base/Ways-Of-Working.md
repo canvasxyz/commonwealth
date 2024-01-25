@@ -69,7 +69,7 @@ The "blocked" label is the official source of truth as to whether a story is con
 
 #### Story Point Estimation
 
-1. You must add point estimations to your stories before moving them to "In Progress." (Even better if you can have stories estimated while "Teed Up.")
+1. Engineers should add point estimation to their stories as soon as possible, to help inform sprint and cycle planning. The "In Progress" label marks a hard ceiling for estimation: points must always be added before work is begun on a ticket.
 2. We use Fibonacci points, i.e. 1, 2, 3, 5, 8, 13. (See below for full breakdown of point values.)
 3. Stories of any point value may be broken out into subtasks.
 4. Stories of more than 3 points must be broken out into subtasks.
