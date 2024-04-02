@@ -1,10 +1,10 @@
+import NodeInfo from 'models/NodeInfo';
 import React from 'react';
-import { CWSpinner } from 'views/components/component_kit/cw_spinner';
 import { CWText } from 'views/components/component_kit/cw_text';
 import { CWRelatedCommunityCard } from 'views/components/component_kit/new_designs/CWRelatedCommunityCard';
 import { CWTable } from 'views/components/component_kit/new_designs/CWTable';
 import { ViewType } from 'views/pages/DirectoryPage/useDirectoryPageData';
-
+import CWCircleMultiplySpinner from '../../components/component_kit/new_designs/CWCircleMultiplySpinner';
 import './DirectoryPageContent.scss';
 
 type RowType = {
@@ -18,7 +18,7 @@ type RowType = {
   id: string;
 };
 
-type CommunityData = {
+export type CommunityData = {
   name: string;
   nameLower: string;
   description: string;
@@ -26,6 +26,8 @@ type CommunityData = {
   threads: string;
   iconUrl: string;
   id: string;
+  namespace: string;
+  ChainNode: NodeInfo;
 };
 
 interface DirectoryPageContentProps {
@@ -80,7 +82,7 @@ const DirectoryPageContent = ({
   if (isLoading) {
     return (
       <div className="directory-loader-container">
-        <CWSpinner size="large" />
+        <CWCircleMultiplySpinner />
       </div>
     );
   }
@@ -112,10 +114,7 @@ const DirectoryPageContent = ({
       {filteredRelatedCommunitiesData.map((community) => (
         <CWRelatedCommunityCard
           key={community.id}
-          id={community.id}
-          communityName={community.name}
-          communityDescription={community.description}
-          communityIconUrl={community.iconUrl}
+          community={community}
           memberCount={community.members}
           threadCount={community.threads}
         />

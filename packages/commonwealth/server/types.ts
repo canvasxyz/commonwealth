@@ -27,6 +27,7 @@ export type TypedRequestQuery<
   user?: Express.User & UserInstance;
   address?: AddressInstance;
   chain?: CommunityInstance;
+  community?: CommunityInstance;
   query: Q;
 };
 
@@ -36,6 +37,7 @@ export type TypedRequestBody<
   user?: Express.User & UserInstance;
   address?: AddressInstance;
   chain?: CommunityInstance;
+  community?: CommunityInstance;
   body: B;
 };
 
@@ -45,6 +47,7 @@ export type TypedRequestParams<
   user?: Express.User & UserInstance;
   address?: AddressInstance;
   chain?: CommunityInstance;
+  community?: CommunityInstance;
   params: P;
 };
 
@@ -56,6 +59,7 @@ export type TypedRequest<
   user?: Express.User & UserInstance;
   address?: AddressInstance;
   chain?: CommunityInstance;
+  community?: CommunityInstance;
   body?: B;
   query?: Q;
   params?: P;
@@ -95,6 +99,12 @@ declare global {
       // TODO: session is used in logout.ts -> remove?
       session: any;
       sessionID: any;
+      /**
+       * Get a request header
+       */
+      readonly get: (name: string) => string | undefined;
+      readonly protocol: string;
+      readonly originalUrl: string;
     }
   }
 }

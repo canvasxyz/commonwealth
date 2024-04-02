@@ -12,7 +12,7 @@ export async function sleep(msec) {
   return new Promise((resolve) => setTimeout(resolve, msec));
 }
 
-export function threadStageToLabel(stage: ThreadStage) {
+export function threadStageToLabel(stage: string) {
   if (stage === ThreadStage.Discussion) {
     return 'Discussion';
   } else if (stage === ThreadStage.ProposalInReview) {
@@ -35,26 +35,9 @@ export function isDefaultStage(stage: string) {
   );
 }
 
-export function parseCustomStages(str) {
-  // Parse customStages into a `string[]` and then cast to ThreadStage[]
-  // If parsing fails, return an empty array.
-  let arr;
-  const default_stages = [
-    ThreadStage.Discussion,
-    ThreadStage.ProposalInReview,
-    ThreadStage.Voting,
-    ThreadStage.Passed,
-    ThreadStage.Failed,
-  ];
-  try {
-    const stages = JSON.parse(str);
-    arr = Array.isArray(stages) ? Array.from(stages) : default_stages;
-  } catch (e) {
-    return default_stages;
-  }
-  return arr
-    .map((s) => s?.toString())
-    .filter((s) => s) as unknown as ThreadStage[];
+// Provides a default if community has no custom stages.
+export function parseCustomStages(customStages?: string[]): string[] {
+  return customStages ?? Object.values(ThreadStage);
 }
 
 /*
@@ -212,7 +195,13 @@ export function formatAddressShort(
   numberOfVisibleCharacters = 5,
   numberOfVisibleCharactersTail = 4,
 ) {
-  if (address.length < 10) return address;
+  if (
+    address.length <
+    numberOfVisibleCharacters + numberOfVisibleCharactersTail + 1
+  ) {
+    return address;
+  }
+
   return `${address.slice(0, numberOfVisibleCharacters)}…${address.slice(
     -numberOfVisibleCharactersTail,
   )}`;
@@ -349,17 +338,3 @@ export function getDecimals(chain: IChainAdapter<Coin, Account>): number {
 
   return decimals;
 }
-
-export const shortenIdentifier = (identifer: string) => {
-  // Check if the string is longer than 6 characters
-  if (identifer.length > 6) {
-    // Extract the first three and last three characters
-    const start = identifer.substring(0, 3);
-    const end = identifer.substring(identifer.length - 3);
-    // Return the formatted string
-    return `${start}...${end}`;
-  } else {
-    // Return the original string if it's 6 characters or shorter
-    return identifer;
-  }
-};

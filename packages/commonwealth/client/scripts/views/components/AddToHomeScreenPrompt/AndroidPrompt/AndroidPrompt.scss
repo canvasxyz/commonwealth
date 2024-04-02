@@ -101,6 +101,35 @@
       letter-spacing: 0.16px;
     }
 
+    .manual-install {
+      display: none;
+      flex-direction: column;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-top: 16px;
+      margin-bottom: 16px;
+
+      .Text {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        color: $neutral-500 !important;
+
+        .settings-icon {
+          color: $primary-500;
+        }
+
+        .highlight {
+          background: $neutral-50;
+          margin-left: 8px;
+          margin-right: 8px;
+          padding: 2px;
+          border-radius: 6px;
+          color: $neutral-600;
+        }
+      }
+    }
+
     .hide-prompt {
       flex: 1 0 0;
       margin-top: 16px;

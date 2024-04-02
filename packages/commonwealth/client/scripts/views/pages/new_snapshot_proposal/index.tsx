@@ -14,9 +14,9 @@ import { useLocation } from 'react-router';
 import app from 'state';
 import { CWButton } from 'views/components/component_kit/new_designs/cw_button';
 import { MixpanelSnapshotEvents } from '../../../../../shared/analytics/types';
-import { CWSpinner } from '../../components/component_kit/cw_spinner';
 import { CWText } from '../../components/component_kit/cw_text';
 import { CWTextInput } from '../../components/component_kit/cw_text_input';
+import CWCircleMultiplySpinner from '../../components/component_kit/new_designs/CWCircleMultiplySpinner';
 import {
   ReactQuillEditor,
   createDeltaFromText,
@@ -213,7 +213,7 @@ export const NewSnapshotProposalForm = ({
     <div className="NewSnapshotProposalForm">
       {loading ? (
         <div className="proposal-loading">
-          <CWSpinner />
+          <CWCircleMultiplySpinner />
         </div>
       ) : (
         <>
@@ -225,7 +225,7 @@ export const NewSnapshotProposalForm = ({
           )}
           {showScoreWarning ? (
             <CWText>
-              You need to have a minimum of {space.filters.minScore}{' '}
+              You need to have a minimum of {space.validation.params.minScore}{' '}
               {space.symbol} in order to submit a proposal.
             </CWText>
           ) : (

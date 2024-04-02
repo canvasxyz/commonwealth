@@ -10,6 +10,7 @@ interface BuyStakeProps {
   amount: number;
   chainRpc: string;
   walletAddress: string;
+  ethChainId: number;
 }
 
 const buyStake = async ({
@@ -18,13 +19,12 @@ const buyStake = async ({
   amount,
   chainRpc,
   walletAddress,
+  ethChainId,
 }: BuyStakeProps) => {
   const CommunityStakes = await lazyLoadCommunityStakes();
   const communityStakes = new CommunityStakes(
-    commonProtocol.factoryContracts[
-      commonProtocol.ValidChains.Base
-    ].communityStake,
-    commonProtocol.factoryContracts[commonProtocol.ValidChains.Base].factory,
+    commonProtocol.factoryContracts[ethChainId].communityStake,
+    commonProtocol.factoryContracts[ethChainId].factory,
     chainRpc,
   );
 
@@ -36,7 +36,13 @@ const buyStake = async ({
   );
 };
 
-const useBuyStakeMutation = () => {
+interface UseBuyStakeMutationProps {
+  shouldUpdateActiveAddress?: boolean;
+}
+
+const useBuyStakeMutation = ({
+  shouldUpdateActiveAddress = true,
+}: UseBuyStakeMutationProps) => {
   return useMutation({
     mutationFn: buyStake,
     onSuccess: async (_, variables) => {
@@ -49,7 +55,9 @@ const useBuyStakeMutation = () => {
           variables.walletAddress,
         ],
       });
-      await setActiveAccountOnTransactionSuccess(variables.walletAddress);
+      if (shouldUpdateActiveAddress) {
+        await setActiveAccountOnTransactionSuccess(variables.walletAddress);
+      }
     },
   });
 };

@@ -25,7 +25,6 @@ import DirectoryMenuItem from '../DirectoryMenuItem';
 import { DiscussionSection } from '../discussion_section';
 import { ExternalLinksModule } from '../external_links_module';
 import { GovernanceSection } from '../governance_section';
-import { AdminSection as OldAdminSection } from '../old_admin_section';
 import { CommunitySectionSkeleton } from './CommunitySectionSkeleton';
 
 interface CommunitySectionProps {
@@ -33,7 +32,6 @@ interface CommunitySectionProps {
 }
 
 export const CommunitySection = ({ showSkeleton }: CommunitySectionProps) => {
-  const newAdminOnboardingEnabled = useFlag('newAdminOnboarding');
   const communityHomepageEnabled = useFlag('communityHomepage');
   const communityStakeEnabled = useFlag('communityStake');
   const navigate = useCommonNavigate();
@@ -50,6 +48,7 @@ export const CommunitySection = ({ showSkeleton }: CommunitySectionProps) => {
   const {
     modeOfManageCommunityStakeModal,
     setModeOfManageCommunityStakeModal,
+    selectedCommunity,
   } = useManageCommunityStakeModalStore();
 
   if (showSkeleton || isLoading) return <CommunitySectionSkeleton />;
@@ -86,7 +85,7 @@ export const CommunitySection = ({ showSkeleton }: CommunitySectionProps) => {
         {showAdmin && (
           <>
             <CWDivider />
-            {newAdminOnboardingEnabled ? <AdminSection /> : <OldAdminSection />}
+            <AdminSection />
           </>
         )}
         {communityHomepageEnabled && app.chain?.meta.hasHomepage && (
@@ -130,6 +129,7 @@ export const CommunitySection = ({ showSkeleton }: CommunitySectionProps) => {
           <ManageCommunityStakeModal
             mode={modeOfManageCommunityStakeModal}
             onModalClose={() => setModeOfManageCommunityStakeModal(null)}
+            {...(selectedCommunity && { community: selectedCommunity })}
           />
         }
         onClose={() => setModeOfManageCommunityStakeModal(null)}

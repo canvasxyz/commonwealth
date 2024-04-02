@@ -1,4 +1,4 @@
-import { ChainBase, ChainNetwork } from '@hicommonwealth/core';
+import { ChainBase } from '@hicommonwealth/core';
 import {
   linkExistingAddressToChainOrCommunity,
   setActiveAccount,
@@ -9,17 +9,11 @@ import React, { useState } from 'react';
 import app from 'state';
 import { addressSwapper } from 'utils';
 import { AccountSelector } from 'views/components/component_kit/cw_wallets_list';
-import { isWindowMediumSmallInclusive } from 'views/components/component_kit/helpers';
 import TOSModal from 'views/modals/TOSModal';
-import { LoginModal } from 'views/modals/login_modal';
-import { useFlag } from '../../../hooks/useFlag';
 import { AuthModal } from '../../modals/AuthModal';
 import { CWModal } from '../component_kit/new_designs/CWModal';
 
-const NON_INTEROP_NETWORKS = [ChainNetwork.AxieInfinity];
-
 const useJoinCommunity = () => {
-  const newSignInModalEnabled = useFlag('newSignInModal');
   const [isAccountSelectorModalOpen, setIsAccountSelectorModalOpen] =
     useState(false);
   const [isTOSModalOpen, setIsTOSModalOpen] = useState(false);
@@ -63,14 +57,6 @@ const useJoinCommunity = () => {
       return false;
     }
 
-    // filter additionally by chain network if in list of non-interop, unless we are on that chain
-    // TODO: make this related to wallet.specificChains
-    if (
-      NON_INTEROP_NETWORKS.includes(addressChainInfo?.network) &&
-      activeChainInfo?.network !== addressChainInfo?.network
-    ) {
-      return false;
-    }
     return true;
   });
 
@@ -86,16 +72,11 @@ const useJoinCommunity = () => {
   );
 
   const performJoinCommunityLinking = async () => {
-    if (
-      sameBaseAddressesRemoveDuplicates.length > 1 &&
-      app.activeChainId() !== 'axie-infinity'
-    ) {
+    if (sameBaseAddressesRemoveDuplicates.length > 1) {
       setIsAccountSelectorModalOpen(true);
-    } else if (
-      sameBaseAddressesRemoveDuplicates.length === 1 &&
-      app.activeChainId() !== 'axie-infinity'
-    ) {
+    } else if (sameBaseAddressesRemoveDuplicates.length === 1) {
       await linkToCommunity(0);
+      return true;
     } else {
       setIsAuthModalOpen(true);
     }
@@ -118,8 +99,9 @@ const useJoinCommunity = () => {
           originAddressInfo.community.id,
         );
 
-        if (res && res.result) {
-          const { verification_token, addresses, encodedAddress } = res.result;
+        if (res && res.data.result) {
+          const { verification_token, addresses, encodedAddress } =
+            res.data.result;
           app.user.setAddresses(
             addresses.map((a) => {
               return new AddressInfo({
@@ -183,11 +165,13 @@ const useJoinCommunity = () => {
         app.chain?.meta.id !== 'injective')
     ) {
       setIsAuthModalOpen(true);
+      return false;
     } else {
       if (hasTermsOfService) {
         setIsTOSModalOpen(true);
+        return false;
       } else {
-        await performJoinCommunityLinking();
+        return await performJoinCommunityLinking();
       }
     }
   };
@@ -231,31 +215,14 @@ const useJoinCommunity = () => {
     />
   );
 
-  const LoginModalWrapper = (
-    <>
-      {!newSignInModalEnabled ? (
-        <CWModal
-          content={
-            <LoginModal onModalClose={() => setIsAuthModalOpen(false)} />
-          }
-          isFullScreen={isWindowMediumSmallInclusive(window.innerWidth)}
-          onClose={() => setIsAuthModalOpen(false)}
-          open={isAuthModalOpen}
-        />
-      ) : (
-        <AuthModal
-          onClose={() => setIsAuthModalOpen(false)}
-          isOpen={isAuthModalOpen}
-        />
-      )}
-    </>
-  );
-
   const JoinCommunityModals = (
     <>
       {AccountSelectorModal}
       {TermsOfServiceModal}
-      {LoginModalWrapper}
+      <AuthModal
+        onClose={() => setIsAuthModalOpen(false)}
+        isOpen={isAuthModalOpen}
+      />
     </>
   );
 

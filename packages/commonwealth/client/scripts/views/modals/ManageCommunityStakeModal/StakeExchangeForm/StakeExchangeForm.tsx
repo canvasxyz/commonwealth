@@ -26,8 +26,10 @@ import CWPopover, {
   usePopover,
 } from 'views/components/component_kit/new_designs/CWPopover';
 import { CWSelectList } from 'views/components/component_kit/new_designs/CWSelectList';
+import { CWTextInput } from 'views/components/component_kit/new_designs/CWTextInput';
 import { MessageRow } from 'views/components/component_kit/new_designs/CWTextInput/MessageRow';
 import { CWButton } from 'views/components/component_kit/new_designs/cw_button';
+import { trpc } from '../../../../utils/trpcClient';
 import { useStakeExchange } from '../hooks';
 import {
   ManageCommunityStakeModalMode,
@@ -39,6 +41,8 @@ import {
   CustomAddressOptionElement,
 } from './CustomAddressOption';
 
+import ChainInfo from 'client/scripts/models/ChainInfo';
+import { CommunityData } from 'client/scripts/views/pages/DirectoryPage/DirectoryPageContent';
 import './StakeExchangeForm.scss';
 
 type OptionDropdown = {
@@ -55,6 +59,7 @@ interface StakeExchangeFormProps {
   addressOptions: OptionDropdown[];
   numberOfStakeToExchange: number;
   onSetNumberOfStakeToExchange: React.Dispatch<React.SetStateAction<number>>;
+  community?: ChainInfo | CommunityData;
 }
 
 const StakeExchangeForm = ({
@@ -66,9 +71,16 @@ const StakeExchangeForm = ({
   addressOptions,
   numberOfStakeToExchange,
   onSetNumberOfStakeToExchange,
+  community,
 }: StakeExchangeFormProps) => {
-  const chainRpc = app?.chain?.meta?.ChainNode?.url;
-  const activeAccountAddress = app?.user?.activeAccount?.address;
+  const chainRpc =
+    community?.ChainNode?.url || app?.chain?.meta?.ChainNode?.url;
+  const ethChainId =
+    community?.ChainNode?.ethChainId || app?.chain?.meta?.ChainNode?.ethChainId;
+  // Use the `selectedAddress.value` if buying stake in a non active community (i.e app.activeChainId() != community.id)
+  const activeAccountAddress = community
+    ? selectedAddress.value
+    : app?.user?.activeAccount?.address;
 
   const {
     buyPriceData,
@@ -79,17 +91,22 @@ const StakeExchangeForm = ({
   } = useStakeExchange({
     mode,
     address: selectedAddress?.value,
-    numberOfStakeToExchange,
+    numberOfStakeToExchange: numberOfStakeToExchange ?? 0,
+    community,
   });
 
   const { stakeBalance, stakeValue, currentVoteWeight, stakeData } =
-    useCommunityStake({ walletAddress: selectedAddress?.value });
+    useCommunityStake({ walletAddress: selectedAddress?.value, community });
 
-  const { mutateAsync: buyStake } = useBuyStakeMutation();
+  const createStakeTransaction =
+    trpc.community.createStakeTransaction.useMutation();
+  const { mutateAsync: buyStake } = useBuyStakeMutation({
+    shouldUpdateActiveAddress: !community, // only update active address if buying stake in an active community
+  });
   const { mutateAsync: sellStake } = useSellStakeMutation();
 
   const expectedVoteWeight = commonProtocol.calculateVoteWeight(
-    String(numberOfStakeToExchange),
+    numberOfStakeToExchange ? String(numberOfStakeToExchange) : '0',
     stakeData?.vote_weight,
   );
 
@@ -111,6 +128,13 @@ const StakeExchangeForm = ({
         namespace: stakeData?.Chain?.namespace,
         chainRpc,
         walletAddress: selectedAddress?.value,
+        ethChainId,
+      });
+
+      await createStakeTransaction.mutateAsync({
+        id: '1',
+        transaction_hash: txReceipt.transactionHash,
+        community_id: app.activeChainId(),
       });
 
       onSetSuccessTransactionHash(txReceipt?.transactionHash);
@@ -118,8 +142,8 @@ const StakeExchangeForm = ({
 
       trackAnalytics({
         event: MixpanelCommunityStakeEvent.STAKE_BOUGHT,
-        community: app.activeChainId(),
-        userId: app.user.activeAccount.profile.id,
+        community: community?.id || app.activeChainId(),
+        userId: app?.user?.activeAccount?.profile?.id,
         userAddress: selectedAddress?.value,
       });
     } catch (err) {
@@ -138,6 +162,13 @@ const StakeExchangeForm = ({
         namespace: stakeData?.Chain?.namespace,
         chainRpc,
         walletAddress: selectedAddress?.value,
+        ethChainId,
+      });
+
+      await createStakeTransaction.mutateAsync({
+        id: '1',
+        transaction_hash: txReceipt.transactionHash,
+        community_id: app.activeChainId(),
       });
 
       onSetSuccessTransactionHash(txReceipt?.transactionHash);
@@ -145,8 +176,8 @@ const StakeExchangeForm = ({
 
       trackAnalytics({
         event: MixpanelCommunityStakeEvent.STAKE_SOLD,
-        community: app.activeChainId(),
-        userId: app.user.activeAccount.profile.id,
+        community: community?.id || app.activeChainId(),
+        userId: app?.user?.activeAccount?.profile?.id,
         userAddress: selectedAddress?.value,
       });
     } catch (err) {
@@ -170,9 +201,20 @@ const StakeExchangeForm = ({
     onSetNumberOfStakeToExchange((prevState) => prevState + 1);
   };
 
-  const insufficientFunds =
-    isBuyMode &&
-    parseFloat(userEthBalance) < parseFloat(buyPriceData?.totalPrice);
+  const handleInput = (e) => {
+    const inputValue = e.target.value;
+    const numericValue = inputValue.replace(/[^0-9]/g, '');
+    const parsed = parseInt(numericValue);
+    if (parsed < 1000000) {
+      onSetNumberOfStakeToExchange(parsed);
+    } else if (inputValue === '') {
+      onSetNumberOfStakeToExchange(0);
+    }
+  };
+
+  const insufficientFunds = isBuyMode
+    ? parseFloat(userEthBalance) < parseFloat(buyPriceData?.totalPrice)
+    : numberOfStakeToExchange > stakeBalance;
 
   const ctaDisabled = isBuyMode
     ? insufficientFunds || numberOfStakeToExchange <= 0 || !selectedAddress
@@ -283,9 +325,14 @@ const StakeExchangeForm = ({
                 onClick={handleMinus}
                 disabled={minusDisabled}
               />
-              <CWText type="h3" fontWeight="bold" className="number">
-                {numberOfStakeToExchange}
-              </CWText>
+              <CWTextInput
+                onInput={handleInput}
+                value={numberOfStakeToExchange}
+                inputClassName={clsx('number', {
+                  expanded: numberOfStakeToExchange?.toString().length > 3,
+                })}
+                containerClassName="number-container"
+              />
               <CWCircleButton
                 buttonType="secondary"
                 iconName="plus"
@@ -382,7 +429,9 @@ const StakeExchangeForm = ({
         </div>
 
         <div className="total-cost-row">
-          <CWText type="caption">{isBuyMode ? 'Total cost' : 'Net'}</CWText>
+          <div className="left-side">
+            <CWText type="caption">{isBuyMode ? 'Total cost' : 'Net'}</CWText>
+          </div>
           {isUsdPriceLoading ? (
             <Skeleton className="price-skeleton" />
           ) : (

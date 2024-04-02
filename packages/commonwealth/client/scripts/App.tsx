@@ -4,24 +4,16 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import useInitApp from 'hooks/useInitApp';
 import router from 'navigation/Router';
-import React, { StrictMode, useEffect, useState } from 'react';
+import React, { StrictMode } from 'react';
+import { HelmetProvider } from 'react-helmet-async';
 import { RouterProvider } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import { queryClient } from 'state/api/config';
+import { Splash } from './Splash';
 import { openFeatureProvider } from './helpers/feature-flags';
 import useAppStatus from './hooks/useAppStatus';
+import { trpc, trpcClient } from './utils/trpcClient';
 import { AddToHomeScreenPrompt } from './views/components/AddToHomeScreenPrompt';
-
-import { CWIcon } from './views/components/component_kit/cw_icons/cw_icon';
-
-const Splash = () => {
-  return (
-    <div className="Splash">
-      {/* This can be a moving bobber, atm it is still */}
-      <CWIcon iconName="cow" iconSize="xxl" />
-    </div>
-  );
-};
 
 OpenFeature.setProvider(openFeatureProvider);
 
@@ -30,43 +22,33 @@ const App = () => {
   const { isAddedToHomeScreen, isMarketingPage, isIOS, isAndroid } =
     useAppStatus();
 
-  const [showPrompt, setShowPrompt] = useState(false);
-  const [isSplashUnloaded, setIsSplashUnloaded] = useState(false);
-
-  useEffect(() => {
-    if (!isLoading) {
-      // Delay the unloading of the Splash component
-      setTimeout(() => {
-        setIsSplashUnloaded(true);
-      }, 1000); // Adjust the delay as needed
-    }
-  }, [isLoading]);
-
-  useEffect(() => {
-    if (isSplashUnloaded) {
-      setShowPrompt(true);
-    }
-  }, [isSplashUnloaded]);
-
   return (
     <StrictMode>
-      <QueryClientProvider client={queryClient}>
-        <OpenFeatureProvider client={undefined}>
-          {isLoading ? (
-            <Splash />
-          ) : (
-            <>
-              <RouterProvider router={router(customDomain)} />
-              {isAddedToHomeScreen || isMarketingPage || !showPrompt ? null : (
-                <AddToHomeScreenPrompt isIOS={isIOS} isAndroid={isAndroid} />
+      <HelmetProvider>
+        <QueryClientProvider client={queryClient}>
+          <trpc.Provider client={trpcClient} queryClient={queryClient}>
+            <OpenFeatureProvider client={undefined}>
+              {isLoading ? (
+                <Splash />
+              ) : (
+                <>
+                  <RouterProvider router={router(customDomain)} />
+                  {isAddedToHomeScreen || isMarketingPage ? null : (
+                    <AddToHomeScreenPrompt
+                      isIOS={isIOS}
+                      isAndroid={isAndroid}
+                      displayDelayMilliseconds={1000}
+                    />
+                  )}
+                </>
               )}
-            </>
-          )}
 
-          <ToastContainer />
-          <ReactQueryDevtools />
-        </OpenFeatureProvider>
-      </QueryClientProvider>
+              <ToastContainer />
+              <ReactQueryDevtools />
+            </OpenFeatureProvider>
+          </trpc.Provider>
+        </QueryClientProvider>
+      </HelmetProvider>
     </StrictMode>
   );
 };

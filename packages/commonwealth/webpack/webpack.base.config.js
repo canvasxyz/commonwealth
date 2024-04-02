@@ -71,13 +71,8 @@ module.exports = {
       'process.env.ETH_RPC': JSON.stringify(process.env.ETH_RPC),
     }),
     new webpack.DefinePlugin({
-      'process.env.FLAG_NEW_ADMIN_ONBOARDING': JSON.stringify(
-        process.env.FLAG_NEW_ADMIN_ONBOARDING,
-      ),
-    }),
-    new webpack.DefinePlugin({
-      'process.env.FLAG_NEW_SIGN_IN_MODAL': JSON.stringify(
-        process.env.FLAG_NEW_SIGN_IN_MODAL,
+      'process.env.FLAG_MY_COMMUNITY_STAKE_PAGE_ENABLED': JSON.stringify(
+        process.env.FLAG_MY_COMMUNITY_STAKE_PAGE_ENABLED,
       ),
     }),
     new webpack.DefinePlugin({
@@ -89,11 +84,6 @@ module.exports = {
       'process.env.IS_PRODUCTION': JSON.stringify(process.env.IS_PRODUCTION),
     }),
     new webpack.DefinePlugin({
-      'process.env.FLAG_ROOT_DOMAIN_REBRAND': JSON.stringify(
-        process.env.FLAG_ROOT_DOMAIN_REBRAND,
-      ),
-    }),
-    new webpack.DefinePlugin({
       'process.env.UNLEASH_FRONTEND_SERVER_URL': JSON.stringify(
         process.env.UNLEASH_FRONTEND_SERVER_URL,
       ),
@@ -101,6 +91,11 @@ module.exports = {
     new webpack.DefinePlugin({
       'process.env.UNLEASH_FRONTEND_API_TOKEN': JSON.stringify(
         process.env.UNLEASH_FRONTEND_API_TOKEN,
+      ),
+    }),
+    new webpack.DefinePlugin({
+      'process.env.HEROKU_APP_NAME': JSON.stringify(
+        process.env.HEROKU_APP_NAME,
       ),
     }),
     new HtmlWebpackPlugin({

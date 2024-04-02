@@ -13,10 +13,10 @@ If you add a new environment variable, you must add documentation here. Please d
 - [AWS_ACCESS_KEY_ID](#aws_access_key_id)
 - [AWS_REGION](#aws_region)
 - [AWS_SECRET_ACCESS_KEY](#aws_secret_access_key)
-- [AXIE_SHARED_SECRET](#axie_shared_secret)
 - [CHAIN_PORT](#chain_port)
 - [CLOUDAMQP_URL](#cloudamqp_url)
 - [COSMOS_GOV_V1](#cosmos_gov_v1)
+- [COSMOS_PROXY_REFERER](#cosmos_proxy_referer)
 - [COSMOS_REGISTRY_API](#cosmos_registry_api)
 - [CW_BOT_KEY](#cw_bot_key)
 - [DATABASE_CLEAN_HOUR](#database_clean_hour)
@@ -40,6 +40,7 @@ If you add a new environment variable, you must add documentation here. Please d
 - [ETH_ALCHEMY_API_KEY](#eth_alchemy_api_key)
 - [ETH_RPC](#eth_rpc)
 - [ETHERSCAN_JS_API_KEY](#etherscan_js_api_key)
+- [FALLBACK_NODE_DURATION_S](#fallback_node_duration_s)
 - [FLAG_COMMUNITY_HOMEPAGE](#flag_community_homepage)
 - [FLAG_PROPOSAL_TEMPLATES](#flag_proposal_templates)
 - [HEROKU_APP_NAME](#heroku_app_name)
@@ -80,6 +81,7 @@ If you add a new environment variable, you must add documentation here. Please d
 - [SUPER_ADMIN_WALLET_ADDRESS](#super_admin_wallet_address)
 - [TELEGRAM_BOT_TOKEN_DEV](#telegram_bot_token_dev)
 - [TEST_ENV](#test_env)
+- [TEST_WITH_LOGS](#test_with_logs)
 - [WITH_PRERENDER](#with_prerender)
 - [ZAPIER_WEBHOOK_URL_DEV](#zapier_webhook_url_dev)
 
@@ -95,10 +97,6 @@ AWS region used primarily for uploading local image files. Common uses `us-east-
 
 AWS secret used alongside `AWS_ACCESS_KEY_ID`. Read by our `aws4`, `aws-sdk`, and `rollbar` libraries.
 
-## AXIE_SHARED_SECRET
-
-Secret token used for Axie Infinity login integration.
-
 ## CHAIN_PORT
 
 Used in chain testing; the default value is `3000`. For more information, see [Chain-Testing-Overview.md](../knowledge_base/Chain-Testing-Overview.md).
@@ -110,6 +108,14 @@ Required in production. The URI of our RabbitMQ instance. This value is usually 
 ## COSMOS_GOV_V1
 
 Comma-separated list (e.g. "kyve,csdk") of Cosmos chains using v1 (not v1beta1). As of 231212, this should be `kyve,csdk,csdk-v1,quicksilver-protocol,juno,regen` by default.
+
+Owner: Mark Hagelberg.
+
+## COSMOS_PROXY_REFERER
+
+Optional.
+A whitelist Referer header that will prevent us getting rate-limited by the [proxy maintainers](https://github.com/cosmos/chain-registry/).
+Only used for cosmosAPI requests.
 
 Owner: Mark Hagelberg.
 
@@ -214,6 +220,12 @@ Owner: Ian Rowan
 ## ETHERSCAN_JS_API_KEY
 
 API key for Ethereum data.
+
+## FALLBACK_NODE_DURATION_S
+
+Optional. Defaults to 5 minutes (300 seconds).
+This is number, in seconds. It configures the length of time we will use a community-maintained public endpoint if a given ChainNode fails.
+After this time, the server will try the original DB endpoint again.
 
 ## FLAG_COMMUNITY_HOMEPAGE
 
@@ -384,6 +396,12 @@ Owner: Timothee Legros.
 Used and defined on-the-fly in Playwright scripts.
 
 Owner: Kurtis Assad.
+
+## TEST_WITH_LOGS
+
+If `true`, enables logs when testing
+
+Owner: Roger Torres, Timothee Legros.
 
 ## WITH_PRERENDER
 

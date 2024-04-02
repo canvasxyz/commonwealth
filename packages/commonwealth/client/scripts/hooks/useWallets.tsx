@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import type { SessionPayload } from '@canvas-js/interfaces';
 import { ChainBase, WalletSsoSource } from '@hicommonwealth/core';
-import 'components/component_kit/cw_wallets_list.scss';
+import axios from 'axios';
 import {
   completeClientLogin,
   createUserWithAddress,
@@ -15,7 +15,6 @@ import WebWalletController from 'controllers/app/web_wallets';
 import type Near from 'controllers/chain/near/adapter';
 import type Substrate from 'controllers/chain/substrate/adapter';
 import { signSessionWithAccount } from 'controllers/server/sessions';
-import $ from 'jquery';
 import _ from 'lodash';
 import { useEffect, useState } from 'react';
 import { isMobile } from 'react-device-detect';
@@ -30,26 +29,42 @@ import {
 } from '../../../shared/analytics/types';
 import NewProfilesController from '../controllers/server/newProfiles';
 import { setDarkMode } from '../helpers/darkMode';
-import {
-  getAddressFromWallet,
-  loginToAxie,
-  loginToNear,
-} from '../helpers/wallet';
+import { getAddressFromWallet, loginToNear } from '../helpers/wallet';
 import Account from '../models/Account';
 import IWebWallet from '../models/IWebWallet';
 import { DISCOURAGED_NONREACTIVE_fetchProfilesByAddress } from '../state/api/profiles/fetchProfilesByAddress';
-import type { ProfileRowProps } from '../views/components/component_kit/cw_profiles_list';
 import {
   breakpointFnValidator,
   isWindowMediumSmallInclusive,
 } from '../views/components/component_kit/helpers';
-import type {
-  LoginActiveStep,
-  LoginSidebarType,
-} from '../views/pages/login/types';
 import { useBrowserAnalyticsTrack } from './useBrowserAnalyticsTrack';
 import useBrowserWindow from './useBrowserWindow';
-import { useFlag } from './useFlag';
+
+type ProfileRowProps = {
+  name: string;
+  onClick?: () => void;
+  darkMode?: boolean;
+  isSelected?: boolean;
+};
+
+type LoginSidebarType =
+  | 'connectWallet'
+  | 'emailLogin'
+  | 'communityWalletOptions'
+  | 'newAddressLinked'
+  | 'newOrReturning'
+  | 'createCommunityLogin';
+
+type LoginActiveStep =
+  | 'allSet'
+  | 'connectWithEmail'
+  | 'redirectToSign'
+  | 'ethWalletList'
+  | 'selectAccountType'
+  | 'selectPrevious'
+  | 'selectProfile'
+  | 'walletList'
+  | 'welcome';
 
 type IuseWalletProps = {
   initialBody?: LoginActiveStep;
@@ -62,14 +77,14 @@ type IuseWalletProps = {
 };
 
 const useWallets = (walletProps: IuseWalletProps) => {
-  const newSignInModalEnabled = useFlag('newSignInModal');
+  const createAccountWithDefaultValues = true;
   const [avatarUrl, setAvatarUrl] = useState<string>();
   const [address, setAddress] = useState<string>();
   const [activeStep, setActiveStep] = useState<LoginActiveStep>();
   const [profiles, setProfiles] = useState<Array<ProfileRowProps>>();
   const [sidebarType, setSidebarType] = useState<LoginSidebarType>();
   const [username, setUsername] = useState<string>(
-    newSignInModalEnabled ? 'Anonymous' : '',
+    createAccountWithDefaultValues ? 'Anonymous' : '',
   );
   const [email, setEmail] = useState<string>();
   const [wallets, setWallets] = useState<Array<IWebWallet<any>>>();
@@ -383,7 +398,7 @@ const useWallets = (walletProps: IuseWalletProps) => {
           setSidebarType('newOrReturning');
           setActiveStep('selectAccountType');
 
-          if (newSignInModalEnabled) {
+          if (createAccountWithDefaultValues) {
             // Create the account with default values
             await onCreateNewAccount(
               walletToUse,
@@ -551,8 +566,6 @@ const useWallets = (walletProps: IuseWalletProps) => {
 
     if (wallet.chain === 'near') {
       await loginToNear(app.chain as Near, app.isCustomDomain());
-    } else if (wallet.defaultNetwork === 'axie-infinity') {
-      await loginToAxie(`${app.serverUrl()}/auth/sso`);
     } else {
       const selectedAddress = getAddressFromWallet(wallet);
 
@@ -583,28 +596,34 @@ const useWallets = (walletProps: IuseWalletProps) => {
     setSelectedWallet(wallet);
 
     if (app.isLoggedIn()) {
-      const { result } = await $.post(`${app.serverUrl()}/getAddressStatus`, {
-        address:
-          wallet.chain === ChainBase.Substrate
-            ? addressSwapper({
-                address: selectedAddress,
-                currentPrefix: parseInt(
-                  (app.chain as Substrate)?.meta.ss58Prefix,
-                  10,
-                ),
-              })
-            : selectedAddress,
-        community_id: app.activeChainId() ?? wallet.chain,
-        jwt: app.user.jwt,
-      });
-      if (result.exists && result.belongsToUser) {
-        notifyInfo('This address is already linked to your current account.');
-        return;
-      }
-      if (result.exists) {
-        notifyInfo(
-          'This address is already linked to another account. Signing will transfer ownership to your account.',
-        );
+      try {
+        const res = await axios.post(`${app.serverUrl()}/getAddressStatus`, {
+          address:
+            wallet.chain === ChainBase.Substrate
+              ? addressSwapper({
+                  address: selectedAddress,
+                  currentPrefix: parseInt(
+                    (app.chain as Substrate)?.meta.ss58Prefix,
+                    10,
+                  ),
+                })
+              : selectedAddress,
+          community_id: app.activeChainId() ?? wallet.chain,
+          jwt: app.user.jwt,
+        });
+
+        if (res.data.result.exists && res.data.result.belongsToUser) {
+          notifyInfo('This address is already linked to your current account.');
+          return;
+        }
+
+        if (res.data.result.exists) {
+          notifyInfo(
+            'This address is already linked to another account. Signing will transfer ownership to your account.',
+          );
+        }
+      } catch (err) {
+        console.log('Error getting address status');
       }
     }
 
@@ -642,7 +661,7 @@ const useWallets = (walletProps: IuseWalletProps) => {
         setSignerAccount(signingAccount);
         setIsNewlyCreated(newlyCreated);
         setIsLinkingOnMobile(isLinkingWallet);
-        if (newSignInModalEnabled) {
+        if (createAccountWithDefaultValues) {
           onAccountVerified(
             signingAccount,
             newlyCreated,
@@ -734,7 +753,7 @@ const useWallets = (walletProps: IuseWalletProps) => {
       if (setSignerAccount) setSignerAccount(account);
       if (setIsNewlyCreated) setIsNewlyCreated(false);
       if (setIsLinkingOnMobile) setIsLinkingOnMobile(false);
-      if (newSignInModalEnabled) {
+      if (createAccountWithDefaultValues) {
         onAccountVerified(account, false, false);
       } else {
         setActiveStep('redirectToSign');

@@ -15,6 +15,7 @@ import moment from 'moment';
 import { useCommonNavigate } from 'navigation/helpers';
 import 'pages/view_thread/index.scss';
 import React, { useEffect, useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import app from 'state';
 import { useFetchCommentsQuery } from 'state/api/comments';
 import {
@@ -50,6 +51,7 @@ import {
   breakpointFnValidator,
   isWindowMediumSmallInclusive,
 } from '../../components/component_kit/helpers';
+import { getTextFromDelta } from '../../components/react_quill_editor';
 import { QuillRenderer } from '../../components/react_quill_editor/quill_renderer';
 import { CommentTree } from '../discussions/CommentTree';
 import { clearEditingLocalStorage } from '../discussions/CommentTree/helpers';
@@ -64,16 +66,6 @@ import { LinkedProposalsCard } from './linked_proposals_card';
 import { LinkedThreadsCard } from './linked_threads_card';
 import { LockMessage } from './lock_message';
 import { SnapshotCreationCard } from './snapshot_creation_card';
-
-export type ThreadPrefetch = {
-  [identifier: string]: {
-    pollsStarted?: boolean;
-    profilesFinished: boolean;
-    profilesStarted: boolean;
-    viewCountStarted?: boolean;
-    threadReactionsStarted?: boolean;
-  };
-};
 
 type ViewThreadPageProps = {
   identifier: string;
@@ -123,6 +115,8 @@ const ViewThreadPage = ({ identifier }: ViewThreadPageProps) => {
     ids: [+threadId].filter(Boolean),
     apiCallEnabled: !!threadId, // only call the api if we have thread id
   });
+
+  const communityImage = app.config.chains.getById(app.activeChainId()).iconUrl;
 
   const thread = data?.[0];
 
@@ -389,9 +383,46 @@ const ViewThreadPage = ({ identifier }: ViewThreadPageProps) => {
     action: 'comment',
   });
 
+  const getMetaDescription = (meta: string) => {
+    try {
+      const parsedMeta = JSON.parse(meta);
+      if (getTextFromDelta(parsedMeta)) {
+        return getTextFromDelta(parsedMeta);
+      } else {
+        return meta;
+      }
+    } catch (error) {
+      return;
+    }
+  };
+
   return (
     // TODO: the editing experience can be improved (we can remove a stale code and make it smooth) - create a ticket
     <>
+      <Helmet defaultTitle="Common">
+        {/* Default sharing */}
+        <meta name="title" content={thread.title} />
+        <meta name="description" content={getMetaDescription(thread.body)} />
+        <meta name="author" content={thread.author} />
+
+        {/* Open Graph */}
+        <meta property="og:title" content={thread.title} />
+        <meta
+          property="og:description"
+          content={getMetaDescription(thread.body)}
+        />
+        <meta property="og:image" content={communityImage} />
+        {/* Twitter */}
+        <meta name="twitter:title" content={thread.title} />
+        <meta name="twitter:site" content="@hicommonwealth" />
+        <meta
+          name="twitter:description"
+          content={getMetaDescription(thread.body)}
+        />
+        <meta name="twitter:card" content={communityImage} />
+        <meta name="twitter:image:src" content={communityImage} />
+      </Helmet>
+
       <CWContentPage
         showTabs={isCollapsedSize && tabsShouldBePresent}
         contentBodyLabel="Thread"

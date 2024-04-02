@@ -1,6 +1,7 @@
 import { createCanvasSessionPayload } from 'canvas';
 
 import { ChainBase, WalletId } from '@hicommonwealth/core';
+import axios from 'axios';
 import BN from 'bn.js';
 import {
   completeClientLogin,
@@ -10,7 +11,6 @@ import {
 } from 'controllers/app/login';
 import type { NearAccount } from 'controllers/chain/near/account';
 import type Near from 'controllers/chain/near/adapter';
-import $ from 'jquery';
 import { useCommonNavigate } from 'navigation/helpers';
 import type { WalletConnection } from 'near-api-js';
 import { WalletAccount } from 'near-api-js';
@@ -22,9 +22,7 @@ import { PageNotFound } from 'views/pages/404';
 import { PageLoading } from 'views/pages/loading';
 import { CWButton } from '../components/component_kit/cw_button';
 import { CWText } from '../components/component_kit/cw_text';
-import { isWindowMediumSmallInclusive } from '../components/component_kit/helpers';
-import { CWModal } from '../components/component_kit/new_designs/CWModal';
-import { LoginModal } from '../modals/login_modal';
+import { AuthModal } from '../modals/AuthModal';
 
 // TODO:
 //  - figure out how account switching will work
@@ -203,13 +201,13 @@ const FinishNearLogin = () => {
         // POST object
         const chainCreateArgs = JSON.parse(chainCreateArgString);
 
-        const res = await $.post(
+        const res = await axios.post(
           `${app.serverUrl()}/communities`,
           chainCreateArgs,
         );
 
         await initAppState(false);
-        navigate(`${window.location.origin}/${res.result.chain.id}`);
+        navigate(`${window.location.origin}/${res.data.result.chain.id}`);
       } catch (err) {
         setValidationError(`Failed to initialize chain node: ${err.message}`);
       }
@@ -255,21 +253,14 @@ const FinishNearLogin = () => {
     }
 
     return (
-      <CWModal
-        content={
-          <LoginModal
-            onModalClose={() => {
-              setIsModalOpen(false);
-              redirectToNextPage(navigate);
-            }}
-            initialBody="welcome"
-            initialSidebar="newOrReturning"
-            initialAccount={validatedAccount}
-          />
-        }
-        isFullScreen={isWindowMediumSmallInclusive(window.innerWidth)}
-        onClose={() => setIsModalOpen(false)}
-        open={isModalOpen}
+      <AuthModal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          redirectToNextPage(navigate);
+        }}
+        onSuccess={() => setIsModalOpen(false)}
+        showWalletsFor={validatedAccount.walletId as any}
       />
     );
   } else if (!validating) {

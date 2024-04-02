@@ -1,5 +1,6 @@
 export type ReactionType = 'like';
 import type moment from 'moment';
+import { addressToUserProfile, UserProfile } from './MinimumProfile';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 class Reaction {
@@ -15,6 +16,8 @@ class Reaction {
   public readonly canvasSession: string;
   public readonly canvasHash: string;
   public readonly updatedAt: moment.Moment;
+
+  public readonly profile: UserProfile;
 
   public calculatedVotingWeight: number;
   // TODO: Do thread/comment/proposal ids ever appear as strings?
@@ -44,8 +47,10 @@ class Reaction {
     this.canvasAction = canvas_action;
     this.canvasSession = canvas_session;
     this.canvasHash = canvas_hash;
-    this.calculatedVotingWeight = calculated_voting_weight;
+    this.calculatedVotingWeight = calculated_voting_weight || 1;
     this.updatedAt = updated_at;
+
+    this.profile = addressToUserProfile(Address);
   }
 }
 
