@@ -35,9 +35,10 @@ export class NearAccount extends Account {
     app: IApp,
     Chain: NearChain,
     Accounts: NearAccounts,
-    address: string
+    address: string,
+    ignoreProfile = true,
   ) {
-    super({ community: app.chain.meta, address });
+    super({ community: app.chain.meta, address, ignoreProfile });
     this._walletConnection = new NearJsAccount(Chain.api.connection, address);
     this._Chain = Chain;
     this._Accounts = Accounts;
@@ -56,7 +57,7 @@ export class NearAccount extends Account {
     }
     const kp = await this._Accounts.keyStore.getKey(
       this._Chain.isMainnet ? 'mainnet' : 'testnet',
-      this.address
+      this.address,
     );
     const { publicKey, signature } = kp.sign(Buffer.from(message));
     return JSON.stringify({
@@ -90,17 +91,27 @@ export class NearAccounts implements IAccountsModule<NearAccount> {
     this.keyStore = new keyStores.BrowserLocalStorageKeyStore(localStorage);
   }
 
-  public get(address: string): NearAccount {
+  public get(
+    address: string,
+    keytype?: string,
+    ignoreProfiles = true,
+  ): NearAccount {
     if (!this._Chain) return null; // We can't construct accounts if the NEAR chain isn't loaded
-    return this.fromAddress(address);
+    return this.fromAddress(address, ignoreProfiles);
   }
 
-  public fromAddress(address: string): NearAccount {
+  public fromAddress(address: string, ignoreProfiles = true): NearAccount {
     let acct;
     try {
       acct = this._store.getByAddress(address);
     } catch (e) {
-      acct = new NearAccount(this.app, this._Chain, this, address);
+      acct = new NearAccount(
+        this.app,
+        this._Chain,
+        this,
+        address,
+        ignoreProfiles,
+      );
     }
     return acct;
   }

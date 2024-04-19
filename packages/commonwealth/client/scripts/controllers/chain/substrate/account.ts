@@ -16,13 +16,14 @@ export class SubstrateAccount extends Account {
     app: IApp,
     Accounts: SubstrateAccounts,
     address: string,
-    isEd25519 = false
+    isEd25519 = false,
+    ignoreProfile = true,
   ) {
     if (!app.isModuleReady) {
       // defer chain initialization
-      super({ community: app.chain.meta, address });
+      super({ community: app.chain.meta, address, ignoreProfile });
     } else {
-      super({ community: app.chain.meta, address });
+      super({ community: app.chain.meta, address, ignoreProfile });
     }
     this.isEd25519 = isEd25519;
     this._Accounts = Accounts;
@@ -43,11 +44,15 @@ class SubstrateAccounts implements IAccountsModule<SubstrateAccount> {
     return this._store;
   }
 
-  public get(address: string, keytype?: string) {
+  public get(address: string, keytype?: string, ignoreProfiles = true) {
     if (keytype && keytype !== 'ed25519' && keytype !== 'sr25519') {
       throw new Error(`invalid keytype: ${keytype}`);
     }
-    return this.fromAddress(address, keytype && keytype === 'ed25519');
+    return this.fromAddress(
+      address,
+      keytype && keytype === 'ed25519',
+      ignoreProfiles,
+    );
   }
 
   private _app: IApp;
@@ -64,7 +69,11 @@ class SubstrateAccounts implements IAccountsModule<SubstrateAccount> {
     return decoded.every((v) => v === 0);
   }
 
-  public fromAddress(address: string, isEd25519 = false): SubstrateAccount {
+  public fromAddress(
+    address: string,
+    isEd25519 = false,
+    ignoreProfiles = true,
+  ): SubstrateAccount {
     try {
       decodeAddress(address); // try to decode address; this will produce an error if the address is invalid
     } catch (e) {
@@ -75,12 +84,24 @@ class SubstrateAccounts implements IAccountsModule<SubstrateAccount> {
       const acct = this._store.getByAddress(address);
       // update account key type if created with incorrect settings
       if (acct.isEd25519 !== isEd25519) {
-        return new SubstrateAccount(this.app, this, address, isEd25519);
+        return new SubstrateAccount(
+          this.app,
+          this,
+          address,
+          isEd25519,
+          ignoreProfiles,
+        );
       } else {
         return acct;
       }
     } catch (e) {
-      return new SubstrateAccount(this.app, this, address, isEd25519);
+      return new SubstrateAccount(
+        this.app,
+        this,
+        address,
+        isEd25519,
+        ignoreProfiles,
+      );
     }
   }
 

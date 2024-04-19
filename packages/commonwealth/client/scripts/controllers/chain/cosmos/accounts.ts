@@ -1,7 +1,7 @@
 import type CosmosChain from 'controllers/chain/cosmos/chain';
-import type { IAccountsModule } from '../../../models/interfaces';
 import type { IApp } from 'state';
 import { AccountsStore } from 'stores';
+import type { IAccountsModule } from '../../../models/interfaces';
 import CosmosAccount from './account';
 
 export default class CosmosAccounts implements IAccountsModule<CosmosAccount> {
@@ -18,8 +18,8 @@ export default class CosmosAccounts implements IAccountsModule<CosmosAccount> {
 
   private _Chain: CosmosChain;
 
-  public get(address: string) {
-    return this.fromAddress(address);
+  public get(address: string, keytype?: string, ignoreProfiles = true) {
+    return this.fromAddress(address, ignoreProfiles);
   }
 
   private _app: IApp;
@@ -31,13 +31,20 @@ export default class CosmosAccounts implements IAccountsModule<CosmosAccount> {
     this._app = app;
   }
 
-  public fromAddress(address: string): CosmosAccount {
+  public fromAddress(address: string, ignoreProfiles = true): CosmosAccount {
     // accepts bech32 encoded cosmosxxxxx addresses and not cosmospubxxx
     let acct;
     try {
       acct = this._store.getByAddress(address);
     } catch (e) {
-      acct = new CosmosAccount(this.app, this._Chain, this, address);
+      console.log(`ignoreProfiles: ${ignoreProfiles}`);
+      acct = new CosmosAccount(
+        this.app,
+        this._Chain,
+        this,
+        address,
+        ignoreProfiles,
+      );
     }
     return acct;
   }

@@ -23,7 +23,7 @@ export default class SolanaAccount extends Account {
   private updateBalance = _.throttle(async () => {
     try {
       const bal = await this._Chain.connection.getBalance(
-        await this.publicKey()
+        await this.publicKey(),
       );
       console.log(`Fetched balance: ${bal}`);
       this._balance = this._Chain.coins(bal);
@@ -38,9 +38,10 @@ export default class SolanaAccount extends Account {
     app: IApp,
     ChainInfo: SolanaChain,
     Accounts: SolanaAccounts,
-    address: string
+    address: string,
+    ignoreProfile = true,
   ) {
-    super({ community: app.chain.meta, address });
+    super({ community: app.chain.meta, address, ignoreProfile });
     if (!app.isModuleReady) {
       // defer chain initialization
       app.chainModuleReady.once('ready', () => {
