@@ -8,7 +8,7 @@ export const AUTH_TYPES: AuthTypesList = {
       name: 'walletconnect',
       isCustom: true,
     },
-    label: 'WalletConnect',
+    label: 'WalletConnect / Metamask',
     description: {
       text: 'All Ethereum Wallets',
       hasBackground: true,
