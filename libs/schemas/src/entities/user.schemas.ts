@@ -1,3 +1,4 @@
+import { Roles, WalletId, WalletSsoSource } from '@hicommonwealth/shared';
 import { z } from 'zod';
 import { PG_INT } from '../utils';
 
@@ -56,7 +57,7 @@ export const Address = z.object({
   id: PG_INT.optional(),
   address: z.string().max(255),
   community_id: z.string().max(255).optional(),
-  user_id: PG_INT.optional(),
+  user_id: PG_INT.nullish(),
   verification_token: z.string().max(255).optional(),
   verification_token_expires: z.date().nullable().optional(),
   verified: z.date().nullable().optional(),
@@ -64,15 +65,15 @@ export const Address = z.object({
   is_councillor: z.boolean().optional(),
   is_validator: z.boolean().optional(),
   ghost_address: z.boolean().optional(),
-  profile_id: PG_INT.nullish().optional(),
-  wallet_id: z.string().max(255).optional(),
+  wallet_id: z.nativeEnum(WalletId).optional(),
   block_info: z.string().max(255).optional(),
   is_user_default: z.boolean().optional(),
-  role: z.enum(['member', 'admin', 'moderator']).default('member'),
-  wallet_sso_source: z.string().max(255).optional(),
+  role: z.enum(Roles).default('member'),
+  wallet_sso_source: z.nativeEnum(WalletSsoSource).optional(),
   hex: z.string().max(64).optional(),
   created_at: z.any(),
   updated_at: z.any(),
+  User: User.optional(),
 });
 
 export const SsoToken = z.object({
@@ -94,10 +95,9 @@ export const CommunityMember = z.object({
       community_id: z.string(),
       address: z.string(),
       stake_balance: z.number().nullish(),
-      profile_id: z.number(),
+      role: z.string(),
     }),
   ),
-  roles: z.array(z.string()).nullish(),
   group_ids: z.array(PG_INT),
   last_active: z.any().nullish().describe('string or date'),
 });

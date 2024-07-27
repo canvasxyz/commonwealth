@@ -23,7 +23,6 @@ import { CWButton } from 'views/components/component_kit/new_designs/CWButton';
 import CWPageLayout from 'views/components/component_kit/new_designs/CWPageLayout';
 import { CWTextInput } from 'views/components/component_kit/new_designs/CWTextInput';
 import { MessageRow } from 'views/components/component_kit/new_designs/CWTextInput/MessageRow';
-import { useSessionRevalidationModal } from 'views/modals/SessionRevalidationModal';
 import useCommunityContests from 'views/pages/CommunityManagement/Contests/useCommunityContests';
 import useAppStatus from '../../../hooks/useAppStatus';
 import { ThreadKind, ThreadStage } from '../../../models/types';
@@ -42,7 +41,7 @@ import ContestTopicBanner from './ContestTopicBanner';
 import './NewThreadForm.scss';
 import { checkNewThreadErrors, useNewThreadForm } from './helpers';
 
-const MIN_ETH_FOR_CONTEST_THREAD = 0.005;
+const MIN_ETH_FOR_CONTEST_THREAD = 0.0005;
 
 export const NewThreadForm = () => {
   const navigate = useCommonNavigate();
@@ -111,17 +110,8 @@ export const NewThreadForm = () => {
     apiEnabled: !!user.activeAccount?.address,
   });
 
-  const {
-    mutateAsync: createThread,
-    error: createThreadError,
-    reset: resetCreateThreadMutation,
-  } = useCreateThreadMutation({
+  const { mutateAsync: createThread } = useCreateThreadMutation({
     communityId: app.activeChainId(),
-  });
-
-  const { RevalidationModal } = useSessionRevalidationModal({
-    handleClose: resetCreateThreadMutation,
-    error: createThreadError,
   });
 
   const chainRpc = app?.chain?.meta?.ChainNode?.url;
@@ -344,7 +334,8 @@ export const NewThreadForm = () => {
 
               <MessageRow
                 hasFeedback={walletBalanceError}
-                statusMessage="Ensure that your connected wallet has at least 0.005 ETH to participate."
+                statusMessage={`Ensure that your connected wallet has at least 
+                ${MIN_ETH_FOR_CONTEST_THREAD} ETH to participate.`}
                 validationStatus="failure"
               />
 
@@ -393,7 +384,6 @@ export const NewThreadForm = () => {
         </div>
       </CWPageLayout>
       {JoinCommunityModals}
-      {RevalidationModal}
     </>
   );
 };

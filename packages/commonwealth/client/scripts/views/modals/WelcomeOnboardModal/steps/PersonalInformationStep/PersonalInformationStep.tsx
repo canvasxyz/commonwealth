@@ -83,7 +83,6 @@ const PersonalInformationStep = ({
   const { data: profiles, isLoading: isCheckingUsernameUniqueness } =
     useSearchProfilesQuery({
       limit: 1000,
-      includeRoles: false,
       searchTerm: debouncedSearchTerm,
       communityId: 'all_communities',
       orderBy: APIOrderBy.LastActive,
@@ -122,6 +121,7 @@ const PersonalInformationStep = ({
     if (isUsernameTaken || isCheckingUsernameUniqueness) return;
 
     await updateProfile({
+      userId: user.id,
       address: user.activeAccount?.profile?.address || '',
       chain: user.activeAccount?.profile?.chain || '',
       name: values.username,

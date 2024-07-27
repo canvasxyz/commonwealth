@@ -1,41 +1,19 @@
-import { Role, WalletId, WalletSsoSource } from '@hicommonwealth/shared';
+import { Address } from '@hicommonwealth/schemas';
+import { WalletId } from '@hicommonwealth/shared';
 import Sequelize from 'sequelize';
-import { decrementProfileCount } from '../utils';
+import { z } from 'zod';
+import { decrementProfileCount } from '../utils/denormalizedCountUtils';
 import type { CommunityAttributes, CommunityInstance } from './community';
 import { MembershipAttributes } from './membership';
 import type { ProfileAttributes, ProfileInstance } from './profile';
 import type { SsoTokenInstance } from './sso_token';
 import type { ModelInstance } from './types';
-import type { UserAttributes, UserInstance } from './user';
+import type { UserInstance } from './user';
 
-export type AddressAttributes = {
-  address: string;
-  community_id: string;
-  verification_token: string;
-  role: Role;
-  is_user_default: boolean;
-  id?: number;
-  verification_token_expires?: Date;
-  verified?: Date;
-  block_info?: string;
-  last_active?: Date;
-  created_at?: Date;
-  updated_at?: Date;
-  user_id?: number;
-  is_councillor?: boolean;
-  is_validator?: boolean;
-  ghost_address?: boolean;
-  // Cosmos self-custodial wallets only.
-  // hex is derived from bech32 address using bech32ToHex function in
-  // packages/commonwealth/shared/utils.ts
-  hex?: string;
-  profile_id?: number;
-  wallet_id?: WalletId;
-  wallet_sso_source?: WalletSsoSource;
+export type AddressAttributes = z.infer<typeof Address> & {
   // associations
   Community?: CommunityAttributes;
   Profile?: ProfileAttributes;
-  User?: UserAttributes;
   Memberships?: MembershipAttributes[];
 };
 
@@ -87,7 +65,6 @@ export default (
         allowNull: false,
         defaultValue: false,
       },
-      profile_id: { type: Sequelize.INTEGER, allowNull: true },
       wallet_id: { type: Sequelize.STRING, allowNull: true },
       wallet_sso_source: { type: Sequelize.STRING, allowNull: true },
       block_info: { type: Sequelize.STRING, allowNull: true },
@@ -160,7 +137,7 @@ export default (
 
           await decrementProfileCount(
             sequelize.models,
-            address.community_id,
+            address.community_id!,
             address.user_id!,
             options.transaction!,
           );

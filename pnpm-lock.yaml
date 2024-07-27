@@ -1421,6 +1421,9 @@ importers:
       '@hicommonwealth/model':
         specifier: workspace:*
         version: link:../../libs/model
+      '@hicommonwealth/shared':
+        specifier: workspace:*
+        version: link:../../libs/shared
       axios:
         specifier: ^1.3.4
         version: 1.6.8
@@ -1455,6 +1458,9 @@ importers:
 
   packages/scripts:
     dependencies:
+      '@hicommonwealth/adapters':
+        specifier: workspace:*
+        version: link:../../libs/adapters
       '@hicommonwealth/core':
         specifier: workspace:*
         version: link:../../libs/core
