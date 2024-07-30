@@ -271,7 +271,7 @@ export class Thread implements IUniqueId {
   public readOnly: boolean;
 
   public readonly canvasSignedData: string;
-  public readonly canvasHash: string;
+  public readonly canvasMsgId: string;
 
   // TODO: it is a bit clunky to have a numeric id and a string identifier here
   //  we should remove the number to allow the store to work.
@@ -342,7 +342,7 @@ export class Thread implements IUniqueId {
     reactedProfileAvatarUrl,
     reactedAddressLastActive,
     canvasSignedData,
-    canvasHash,
+    canvasMsgId,
     links,
     discord_meta,
     userId,
@@ -366,7 +366,7 @@ export class Thread implements IUniqueId {
     pinned?: boolean;
     links?: Link[];
     canvasSignedData?: string;
-    canvasHash?: string;
+    canvasMsgId?: string;
     plaintext?: string;
     collaborators?: any[];
     last_edited: string;
@@ -442,7 +442,7 @@ export class Thread implements IUniqueId {
     // @ts-expect-error StrictNullChecks
     this.canvasSignedData = canvasSignedData;
     // @ts-expect-error <StrictNullChecks>
-    this.canvasHash = canvasHash;
+    this.canvasMsgId = canvasMsgId;
     this.links = links || [];
     this.discord_meta = discord_meta;
     this.versionHistory = processVersionHistory(version_history);
@@ -497,7 +497,7 @@ export class Thread implements IUniqueId {
           version_history: [],
           reaction_weights_sum: 0,
           canvas_signed_data: null,
-          canvas_hash: null,
+          canvas_msg_id: null,
         }),
     );
     this.latestActivity = last_commented_on

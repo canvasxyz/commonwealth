@@ -122,7 +122,7 @@ export async function __getBulkThreads(
             pinned, community_id, T.created_at, updated_at, locked_at as thread_locked, links,
             has_poll, last_commented_on, plaintext, comment_count as "numberOfComments",
             marked_as_spam_at, archived_at, topic_id, reaction_weights_sum, canvas_signed_data as "canvasSignedData",
-            canvas_hash as "canvasHash", plaintext, last_edited, address_id
+            canvas_msg_id as "canvasMsgId", plaintext, last_edited, address_id
         FROM "Threads" T
         WHERE
             community_id = :communityId AND
@@ -153,7 +153,7 @@ export async function __getBulkThreads(
             ) as "Address",
             U.id as user_id,
             A.last_active as address_last_active,
-            U.profile->>'avatar_url' as avatar_url, 
+            U.profile->>'avatar_url' as avatar_url,
             U.profile->>'name' as profile_name
         FROM top_threads TH JOIN "Topics" T ON TH.topic_id = T.id
         LEFT JOIN "Addresses" A ON TH.address_id = A.id

@@ -22,7 +22,7 @@ export type ReactionAttributes = {
 
   // canvas-related columns
   canvas_signed_data: string;
-  canvas_hash: string;
+  canvas_msg_id: string;
 
   created_at?: Date;
   updated_at?: Date;
@@ -49,7 +49,7 @@ export default (
       calculated_voting_weight: { type: Sequelize.INTEGER, allowNull: true },
       // canvas-related columns
       canvas_signed_data: { type: Sequelize.JSONB, allowNull: true },
-      canvas_hash: { type: Sequelize.STRING, allowNull: true },
+      canvas_msg_id: { type: Sequelize.STRING, allowNull: true },
     },
     {
       hooks: {
