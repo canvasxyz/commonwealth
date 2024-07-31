@@ -93,6 +93,26 @@ export const verifyComment = async (
   // assertMatches(chainBaseToCanvasChain(chain), action.payload.chain)
 };
 
+export const verifyDeleteComment = async (
+  canvasSignedData: CanvasSignedData,
+  fields: any,
+) => {
+  const { id } = fields;
+
+  await verify(canvasSignedData);
+
+  const { actionMessage } = canvasSignedData;
+  assertMatches(actionMessage.payload.name, 'deleteComment', 'comment', 'call');
+  assertMatches(
+    actionMessage.payload.args.comment_id,
+    parseInt(id),
+    'comment',
+    'comment_id',
+  );
+
+  // assertMatches(chainBaseToCanvasChain(chain), action.payload.chain)
+};
+
 export const verifyThread = async (
   canvasSignedData: CanvasSignedData,
   fields: any,
@@ -133,12 +153,10 @@ export const verifyDeleteThread = async (
   fields: any,
 ) => {
   const { id } = fields;
-  console.log('deleting thread', id);
 
   await verify(canvasSignedData);
 
   const { actionMessage } = canvasSignedData;
-  console.log(actionMessage);
   assertMatches(actionMessage.payload.name, 'deleteThread', 'thread', 'call');
   assertMatches(
     actionMessage.payload.args.thread_id,
