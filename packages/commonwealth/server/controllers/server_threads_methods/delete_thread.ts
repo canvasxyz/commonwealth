@@ -16,6 +16,8 @@ export type DeleteThreadOptions = {
   address: AddressInstance;
   threadId?: number;
   messageId?: string;
+  canvasSignedData?: string;
+  canvasMsgId?: string;
 };
 
 export type DeleteThreadResult = void;
