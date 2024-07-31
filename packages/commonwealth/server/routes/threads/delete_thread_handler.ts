@@ -34,7 +34,7 @@ export const deleteThreadHandler = async (
   }
 
   // @ts-expect-error StrictNullChecks
-  let threadFields: DeleteThreadOptions = { user, address, threadId };
+  const threadFields: DeleteThreadOptions = { user, address, threadId };
 
   if (hasCanvasSignedDataApiArgs(req.body)) {
     threadFields.canvasSignedData = req.body.canvas_signed_data;
