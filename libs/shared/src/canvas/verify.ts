@@ -152,18 +152,10 @@ export const verifyDeleteThread = async (
   canvasSignedData: CanvasSignedData,
   fields: any,
 ) => {
-  const { id } = fields;
-
   await verify(canvasSignedData);
 
   const { actionMessage } = canvasSignedData;
   assertMatches(actionMessage.payload.name, 'deleteThread', 'thread', 'call');
-  assertMatches(
-    actionMessage.payload.args.thread_id,
-    parseInt(id),
-    'thread',
-    'thread_id',
-  );
 
   // assertMatches(chainBaseToCanvasChain(chain), action.payload.chain)
 };
@@ -196,5 +188,37 @@ export const verifyReaction = async (
     'reaction',
     'origin',
   );
+  // assertMatches(chainBaseToCanvasChain(chain), action.payload.chain)
+};
+
+export const verifyDeleteReaction = async (
+  canvasSignedData: CanvasSignedData,
+  fields: any,
+) => {
+  const { id } = fields;
+
+  await verify(canvasSignedData);
+
+  const { actionMessage } = canvasSignedData;
+  if (actionMessage.payload.name == 'unreactThread') {
+    assertMatches(
+      actionMessage.payload.args.thread_id,
+      parseInt(id),
+      'thread',
+      'thread_id',
+    );
+  } else if (actionMessage.payload.name == 'unreactComment') {
+    assertMatches(
+      actionMessage.payload.args.comment_id,
+      parseInt(id),
+      'comment',
+      'comment_id',
+    );
+  } else {
+    throw new Error(
+      `Invalid delete reaction action name: ${actionMessage.payload.name}`,
+    );
+  }
+
   // assertMatches(chainBaseToCanvasChain(chain), action.payload.chain)
 };
