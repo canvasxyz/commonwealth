@@ -97,18 +97,10 @@ export const verifyDeleteComment = async (
   canvasSignedData: CanvasSignedData,
   fields: any,
 ) => {
-  const { id } = fields;
-
   await verify(canvasSignedData);
 
   const { actionMessage } = canvasSignedData;
   assertMatches(actionMessage.payload.name, 'deleteComment', 'comment', 'call');
-  assertMatches(
-    actionMessage.payload.args.comment_id,
-    parseInt(id),
-    'comment',
-    'comment_id',
-  );
 
   // assertMatches(chainBaseToCanvasChain(chain), action.payload.chain)
 };
