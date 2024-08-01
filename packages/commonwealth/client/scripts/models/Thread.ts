@@ -341,8 +341,8 @@ export class Thread implements IUniqueId {
     reactedProfileName,
     reactedProfileAvatarUrl,
     reactedAddressLastActive,
-    canvasSignedData,
-    canvasMsgId,
+    canvas_signed_data,
+    canvas_msg_id,
     links,
     discord_meta,
     userId,
@@ -365,8 +365,8 @@ export class Thread implements IUniqueId {
     url?: string;
     pinned?: boolean;
     links?: Link[];
-    canvasSignedData?: string;
-    canvasMsgId?: string;
+    canvas_signed_data?: string;
+    canvas_msg_id?: string;
     plaintext?: string;
     collaborators?: any[];
     last_edited: string;
@@ -440,9 +440,9 @@ export class Thread implements IUniqueId {
     this.lockedAt = locked_at ? moment(locked_at) : null;
     this.numberOfComments = numberOfComments || 0;
     // @ts-expect-error StrictNullChecks
-    this.canvasSignedData = canvasSignedData;
+    this.canvasSignedData = canvas_signed_data;
     // @ts-expect-error <StrictNullChecks>
-    this.canvasMsgId = canvasMsgId;
+    this.canvasMsgId = canvas_msg_id;
     this.links = links || [];
     this.discord_meta = discord_meta;
     this.versionHistory = processVersionHistory(version_history);
